@@ -3,55 +3,48 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "yourdockerhubusername/multitenantapi"
+        IMAGE_NAME = "muthupandimathi/multitenantapi"
+        IMAGE_TAG = "${BUILD_NUMBER}"
     }
 
     stages {
 
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/yourname/MultiTenantAPI.git'
-            }
-        }
-
-
         stage('Build .NET') {
             steps {
-                bat 'dotnet publish -c Release'
+                dir('MultiTenantAPI') {
+                    bat 'dotnet restore'
+                    bat 'dotnet publish -c Release -o publish'
+                }
             }
         }
-
 
         stage('Docker Build') {
             steps {
-                bat 'docker build -t %IMAGE_NAME%:%BUILD_NUMBER% .'
+                dir('MultiTenantAPI') {
+                    bat 'docker build -t %IMAGE_NAME%:%IMAGE_TAG% .'
+                }
             }
         }
-
 
         stage('Docker Login') {
             steps {
                 withCredentials([
                     usernamePassword(
-                    credentialsId: 'docker-login',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
+                        credentialsId: 'docker-login',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
-
                     bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
-
                 }
             }
         }
 
-
         stage('Docker Push') {
             steps {
-                bat 'docker push %IMAGE_NAME%:%BUILD_NUMBER%'
+                bat 'docker push %IMAGE_NAME%:%IMAGE_TAG%'
             }
         }
-
 
         stage('Deploy Kubernetes') {
             steps {
@@ -60,4 +53,15 @@ pipeline {
         }
 
     }
+
+    post {
+        success {
+            echo 'Build Successful'
+        }
+
+        failure {
+            echo 'Build Failed'
+        }
+    }
+
 }
