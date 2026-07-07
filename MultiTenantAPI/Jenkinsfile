@@ -1,0 +1,63 @@
+pipeline {
+
+    agent any
+
+    environment {
+        IMAGE_NAME = "yourdockerhubusername/multitenantapi"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/yourname/MultiTenantAPI.git'
+            }
+        }
+
+
+        stage('Build .NET') {
+            steps {
+                bat 'dotnet publish -c Release'
+            }
+        }
+
+
+        stage('Docker Build') {
+            steps {
+                bat 'docker build -t %IMAGE_NAME%:%BUILD_NUMBER% .'
+            }
+        }
+
+
+        stage('Docker Login') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                    credentialsId: 'docker-login',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+
+                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+
+                }
+            }
+        }
+
+
+        stage('Docker Push') {
+            steps {
+                bat 'docker push %IMAGE_NAME%:%BUILD_NUMBER%'
+            }
+        }
+
+
+        stage('Deploy Kubernetes') {
+            steps {
+                bat 'kubectl apply -f deployment.yaml'
+            }
+        }
+
+    }
+}

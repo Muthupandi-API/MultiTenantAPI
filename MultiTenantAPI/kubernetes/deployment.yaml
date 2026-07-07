@@ -1,0 +1,26 @@
+﻿apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: multitenant-api
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: multitenant-api
+
+  template:
+    metadata:
+      labels:
+        app: multitenant-api
+
+    spec:
+      containers:
+      - name: multitenant-api
+        image: muthupandimathi/api:abc
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 8080

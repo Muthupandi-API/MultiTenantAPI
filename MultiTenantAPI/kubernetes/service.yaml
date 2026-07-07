@@ -1,0 +1,15 @@
+﻿apiVersion: v1
+kind: Service
+
+metadata:
+  name: multitenant-api-service
+
+spec:
+  selector:
+    app: multitenant-api
+
+  ports:
+  - port: 80
+    targetPort: 8080
+
+  type: LoadBalancer

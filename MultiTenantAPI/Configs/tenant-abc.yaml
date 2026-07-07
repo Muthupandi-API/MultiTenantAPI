@@ -1,0 +1,4 @@
+﻿tenant: abc
+
+database:
+  connectionString: "Server=sql;Database=abc_db;User Id=sa;Password=****"
