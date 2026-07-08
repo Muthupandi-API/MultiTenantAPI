@@ -49,13 +49,14 @@ pipeline {
         stage('Deploy Kubernetes') {
             steps {
                 dir('MultiTenantAPI') {
-                    bat 'kubectl apply -f deployment.yaml'
+                    bat 'kubectl apply -f kubernetes\\deployment.yaml'
                 }
             }
         }
     }
 
     post {
+
         success {
             echo 'Build Successful'
         }
