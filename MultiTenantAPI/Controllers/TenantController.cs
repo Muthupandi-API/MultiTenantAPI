@@ -1,72 +1,129 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using MultiTenantAPI.Models;
 using MultiTenantAPI.Services;
 
-[ApiController]
-[Route("api/[controller]")]
-public class TenantController : ControllerBase
+namespace MultiTenantAPI.Controllers
 {
-    private readonly IConfiguration _configuration;
-    private readonly TenantConfigService _tenantService;
-
-    public TenantController(IConfiguration configuration, TenantConfigService tenantService)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class TenantController : ControllerBase
     {
-        _configuration = configuration;
-        _tenantService = tenantService;
-    }
 
-    [HttpGet("get-config/{tenantId}")]
-    public IActionResult GetConfig(string tenantId)
-    {
-        try
-        {
-            var config = _tenantService.LoadConfig(tenantId);
-            return Ok(config);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, new
-            {
-                Message = "Error loading tenant config",
-                Error = ex.Message
-            });
-        }
-    }
+        private readonly ITenantService _tenantService;
 
-    [HttpPost("create")]
-    public async Task<IActionResult> CreateTenant([FromBody] TenantCreateRequest request)
-    {
-        if (request == null || string.IsNullOrWhiteSpace(request.DatabaseName))
+
+        public TenantController(
+            ITenantService tenantService)
         {
-            return BadRequest(new { Message = "Invalid request" });
+            _tenantService = tenantService;
         }
 
-        var connectionString = _configuration.GetConnectionString("MasterConnection");
 
-        try
+
+        // Check Tenant Middleware
+        [HttpGet]
+        public IActionResult Get()
         {
-            using SqlConnection connection = new SqlConnection(connectionString);
-            await connection.OpenAsync();
-
-            string sql = $"CREATE DATABASE [{request.DatabaseName}]";
-
-            using SqlCommand command = new SqlCommand(sql, connection);
-            await command.ExecuteNonQueryAsync();
-
             return Ok(new
             {
-                Message = "Database Created Successfully",
-                Database = request.DatabaseName
+                Host = HttpContext.Request.Host.Host,
+
+                Tenant =
+                HttpContext.Items["TenantId"]?.ToString()
             });
         }
-        catch (Exception ex)
+
+
+
+
+        // Get Tenant Configuration
+        [HttpGet("get-config/{tenantId}")]
+        public IActionResult GetConfig(string tenantId)
         {
-            return StatusCode(500, new
+            try
             {
-                Message = "Error creating database",
-                Error = ex.Message
-            });
+
+                // TenantService மூலம் config load செய்யும்
+                var config =
+                    _tenantService.LoadConfig(tenantId);
+
+
+                return Ok(config);
+
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, new
+                {
+                    Message = "Error loading tenant config",
+
+                    Error = ex.Message
+                });
+
+            }
         }
+
+
+
+
+
+        // Create Tenant Database
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateTenant(
+            [FromBody] TenantCreateRequest request)
+        {
+
+            if (request == null ||
+               string.IsNullOrWhiteSpace(request.DatabaseName))
+            {
+                return BadRequest(new
+                {
+                    Message = "Invalid request"
+                });
+            }
+
+
+
+            try
+            {
+
+                // Save Tenant details
+                await _tenantService.Create(request);
+
+
+
+                // Create Tenant Database
+                await _tenantService.CreateDatabase(
+                    request.DatabaseName);
+
+
+
+                return Ok(new
+                {
+                    Message =
+                    "Tenant Database Created Successfully",
+
+                    Database =
+                    request.DatabaseName
+                });
+
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, new
+                {
+                    Message =
+                    "Error creating tenant database",
+
+                    Error =
+                    ex.Message
+                });
+
+            }
+
+        }
+
     }
 }

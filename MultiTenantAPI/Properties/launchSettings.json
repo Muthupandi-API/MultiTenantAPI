@@ -38,10 +38,13 @@
       "launchBrowser": true,
       "launchUrl": "swagger",
       "applicationUrl": "http://localhost:9090",
+
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
+
+  
 
   },
   "$schema": "https://json.schemastore.org/launchsettings.json",
