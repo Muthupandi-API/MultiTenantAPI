@@ -37,14 +37,15 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "launchUrl": "swagger",
-      "applicationUrl": "http://localhost:9090",
+       "applicationUrl": "http://localhost:9090",
+      //"applicationUrl": "https://abc.demo1.jailscorp.com:44374",
 
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
 
-  
+
 
   },
   "$schema": "https://json.schemastore.org/launchsettings.json",

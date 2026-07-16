@@ -1,76 +1,56 @@
-using MultiTenantAPI.Services;
 using MultiTenantAPI.Middleware;
 using MultiTenantAPI.Repository;
-
+using MultiTenantAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-// 📌 Add Controllers
+// Controllers
 builder.Services.AddControllers();
 
-
-// 📌 Swagger
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
-// 📌 Tenant Service
+// Dependency Injection
 builder.Services.AddScoped<ITenantService, TenantService>();
-
-
-// 📌 Tenant Repository
 builder.Services.AddScoped<ITenantRepository, TenantRepository>();
 
-
-// 📌 CORS (Angular connect)
+// CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        policy =>
-        {
-            policy
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
             .AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
-        });
+    });
 });
-
-
 
 var app = builder.Build();
 
-
-
-// 📌 Swagger UI
+// Swagger
 app.UseSwagger();
-app.UseSwaggerUI();
 
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MultiTenant API V1");
+    c.RoutePrefix = "swagger";
+});
 
-
-// 📌 HTTPS
-app.UseHttpsRedirection();
-
-
-
-// 📌 CORS
+// CORS
 app.UseCors("AllowAll");
 
-
-
-// 📌 Tenant Middleware
-// Must be before Controller execution
+// Tenant Middleware
 app.UseMiddleware<TenantMiddleware>();
 
+// HTTPS (optional but recommended)
+app.UseHttpsRedirection();
 
-
-// 📌 Authorization
+// Authorization
 app.UseAuthorization();
 
-
-
+// Controllers
 app.MapControllers();
-
-
 
 app.Run();

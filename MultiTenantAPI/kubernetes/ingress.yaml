@@ -1,4 +1,6 @@
-﻿apiVersion: networking.k8s.io/v1
+﻿
+
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 
 metadata:
@@ -6,14 +8,15 @@ metadata:
 
 spec:
   ingressClassName: nginx
+
   rules:
-    - host: "*.jailscorp.com"
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: claudeapidemo-service
-                port:
-                  number: 80
+  - host: "*.demo1.jailscorp.com"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: multitenant-service
+            port:
+              number: 80

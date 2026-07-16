@@ -18,9 +18,9 @@ spec:
 
     spec:
       containers:
-      - name: multitenant-api
-        image: muthupandimathi/api:abc
-        imagePullPolicy: Always
+        - name: multitenant-api
+          image: muthupandimathi/api:v2
+          imagePullPolicy: Always
 
-        ports:
-        - containerPort: 8080
+          ports:
+            - containerPort: 8080

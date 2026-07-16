@@ -2,7 +2,7 @@
 kind: Service
 
 metadata:
-  name: multitenant-api-service
+  name: multitenant-service
 
 spec:
   selector:

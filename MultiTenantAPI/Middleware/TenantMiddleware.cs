@@ -9,17 +9,30 @@
             _next = next;
         }
 
-
         public async Task Invoke(HttpContext context)
         {
             var host = context.Request.Host.Host;
 
-            var tenant = host.Split('.')[0];
+            string tenant = "default";
 
-            context.Items["Tenant"] = tenant;
+            if (!string.IsNullOrEmpty(host))
+            {
+                var parts = host.Split('.');
 
+                if (parts.Length > 0)
+                {
+                    tenant = parts[0];
+                }
+            }
+
+            context.Items["TenantId"] = tenant;
+
+            Console.WriteLine($"Host = {host}");
+            Console.WriteLine($"Tenant = {tenant}");
 
             await _next(context);
         }
+
+        
     }
 }
