@@ -43,7 +43,7 @@ namespace MultiTenantAPI.Controllers
             try
             {
 
-                // TenantService மூலம் config load செய்யும்
+                // TenantService  config load 
                 var config =
                     _tenantService.LoadConfig(tenantId);
 
