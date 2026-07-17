@@ -47,8 +47,6 @@ namespace MultiTenantAPI.Repository
 
 
 
-
-
         public TenantConfig LoadConfig(string tenantId)
         {
 
