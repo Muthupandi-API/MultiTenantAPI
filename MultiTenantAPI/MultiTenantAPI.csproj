@@ -26,8 +26,4 @@
     <PackageReference Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\NewFolder\" />
-  </ItemGroup>
-
 </Project>

@@ -92,15 +92,17 @@ namespace MultiTenantAPI.Controllers
                 Console.WriteLine($"Database  : {request.DatabaseName}");
                 Console.WriteLine($"Email     : {request.AdminEmail}");
 
-                bool result = await _tenantService.CreateTenant(request);
+                var result = await _tenantService.CreateTenant(request);
 
-                if (!result)
+                if (result == null || !result.Success)
                 {
-                    Console.WriteLine("Tenant creation failed.");
+                    Console.WriteLine($"Tenant creation failed: {result?.Message}");
 
                     return StatusCode(500, new
                     {
-                        Message = "Tenant creation failed."
+                        Message = "Tenant creation failed.",
+                        Reason = result?.Message,
+                        Details = result?.Details
                     });
                 }
 

@@ -7,7 +7,7 @@ namespace MultiTenantAPI.Services
 {
     public interface ITenantService
     {
-        Task<bool> CreateTenant(TenantCreateRequest request);
+        Task<TenantCreationResult> CreateTenant(TenantCreateRequest request);
 
         TenantConfig LoadConfig(string tenantId);
     }

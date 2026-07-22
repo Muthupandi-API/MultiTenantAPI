@@ -13,11 +13,39 @@ namespace MultiTenantAPI.Controllers
         {
             try
             {
+                
                 // Angular template folder
                 string source = @"C:\Inetpub\vhosts\demo1.jailscorp.com\site-template";
 
                 // Tenant folder
-                string destination = $@"C:\Inetpub\vhosts\demo1.jailscorp.com\{request.TenantName}";
+                //string destination = $@"C:\Inetpub\vhosts\demo1.jailscorp.com\{request.TenantName}";
+                string basePath = @"C:\Inetpub\vhosts\demo1.jailscorp.com";
+
+
+                int siteNumber = 1;
+
+                while (Directory.Exists(Path.Combine(basePath, $"site{siteNumber}")))
+                {
+                    siteNumber++;
+                }
+
+                // Last existing site
+                siteNumber--;
+
+                string destination = Path.Combine(basePath, $"site{siteNumber}");
+
+                // Clean destination
+                DirectoryInfo dir = new DirectoryInfo(destination);
+
+                foreach (FileInfo file in dir.GetFiles())
+                {
+                    file.Delete();
+                }
+
+                foreach (DirectoryInfo subDir in dir.GetDirectories())
+                {
+                    subDir.Delete(true);
+                }
 
 
 
@@ -36,11 +64,11 @@ namespace MultiTenantAPI.Controllers
                 
 
                 // Create tenant folder
-                if (!Directory.Exists(destination))
-                {
-                    Directory.CreateDirectory(destination);
+                //if (!Directory.Exists(destination))
+                //{
+                //    Directory.CreateDirectory(destination);
                     
-                }
+                //}
 
                 // Copy files
                 CopyFolder(source, destination);

@@ -26,7 +26,7 @@ namespace MultiTenantAPI.Services
             _folderService = folderService;
         }
 
-        public async Task<bool> CreateTenant(TenantCreateRequest request)
+        public async Task<TenantCreationResult> CreateTenant(TenantCreateRequest request)
         {
             try
             {
@@ -45,7 +45,12 @@ namespace MultiTenantAPI.Services
                 if (!databaseCreated)
                 {
                     Console.WriteLine("FAILED : Database");
-                    return false;
+                    return new TenantCreationResult
+                    {
+                        Success = false,
+                        Message = "Database creation failed",
+                        Details = "Repository failed to create database"
+                    };
                 }
 
                 Console.WriteLine("SUCCESS : Database Created");
@@ -77,17 +82,22 @@ namespace MultiTenantAPI.Services
 
                 Console.WriteLine("STEP 4 : Docker Creating");
 
-                bool containerCreated =
+                var dockerResult =
                     await _dockerService.CreateContainer(
                         request.SubDomain,
                         port);
 
-                Console.WriteLine($"Docker Result : {containerCreated}");
+                Console.WriteLine($"Docker Result : Success={dockerResult.Success} ExitCode={dockerResult.ExitCode}");
 
-                if (!containerCreated)
+                if (!dockerResult.Success)
                 {
                     Console.WriteLine("FAILED : Docker");
-                    return false;
+                    return new TenantCreationResult
+                    {
+                        Success = false,
+                        Message = "Docker container creation failed",
+                        Details = $"ExitCode={dockerResult.ExitCode}; Error={dockerResult.Error}; Output={dockerResult.Output}; Command={dockerResult.Command}"
+                    };
                 }
 
                 Console.WriteLine("SUCCESS : Docker Created");
@@ -110,20 +120,34 @@ namespace MultiTenantAPI.Services
                 if (!pleskCreated)
                 {
                     Console.WriteLine("FAILED : Plesk");
-                    return false;
+                    return new TenantCreationResult
+                    {
+                        Success = false,
+                        Message = "Plesk subdomain creation failed",
+                        Details = "PleskService failed to create subdomain"
+                    };
                 }
 
                 Console.WriteLine("SUCCESS : Plesk Created");
                 Console.WriteLine("========== TENANT CREATED ==========");
 
-                return true;
+                return new TenantCreationResult
+                {
+                    Success = true,
+                    Message = "Tenant created successfully"
+                };
             }
             catch (Exception ex)
             {
-                Console.WriteLine("EXCEPTION:");
+                Console.WriteLine("========== EXCEPTION ==========");
                 Console.WriteLine(ex.ToString());
 
-                return false;
+                return new TenantCreationResult
+                {
+                    Success = false,
+                    Message = "Unhandled exception during tenant creation",
+                    Details = ex.ToString()
+                };
             }
         }
 

@@ -2,9 +2,7 @@
 {
     public interface IDockerService
     {
-    
-
-        Task<bool> CreateContainer(string subDomain, int port);
+        Task<DockerResult> CreateContainer(string subDomain, int port);
     }
 }
 
