@@ -1,4 +1,6 @@
-﻿using MultiTenantAPI.Models;
+﻿
+
+using MultiTenantAPI.Models;
 
 namespace MultiTenantAPI.Repository
 {
@@ -6,6 +8,10 @@ namespace MultiTenantAPI.Repository
     {
         Task<bool> CreateDatabase(string databaseName);
 
-        TenantConfig LoadConfig(string tenantId);
+        Task SaveTenant(
+            TenantCreateRequest request,
+            int port);
+
+        Task<int> GetNextPort();
     }
 }

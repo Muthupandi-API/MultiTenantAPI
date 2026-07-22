@@ -1,24 +1,7 @@
-﻿//using Microsoft.AspNetCore.Mvc;
-
-//namespace MultiTenantAPI.Controllers
-//{
-//    [ApiController]
-//    [Route("api/[controller]")]
-//    public class TestController : ControllerBase
-//    {
-//        [HttpGet("tenant")]
-//        public IActionResult GetTenant()
-//        {
-//            return Ok(new
-//            {
-//                Host = HttpContext.Request.Host.Host,
-//                Tenant = HttpContext.Items["TenantId"]?.ToString()
-//            });
-//        }
-//    }
-//}
+﻿
 
 using Microsoft.AspNetCore.Mvc;
+using MultiTenantAPI.Services;
 
 namespace MultiTenantAPI.Controllers
 {
@@ -26,19 +9,7 @@ namespace MultiTenantAPI.Controllers
     [Route("api/[controller]")]
     public class TestController : ControllerBase
     {
-        //[HttpGet]
-        //public IActionResult Get()
-        //{
-        //    var tenant = HttpContext.Items["TenantId"]?.ToString();
-        //    var host = HttpContext.Request.Host.Host;
-
-        //    return Ok(new
-        //    {
-        //        Host = host,
-        //        Tenant = tenant,
-        //        Message = "Tenant detected successfully"
-        //    });
-        //}
+        
 
         [HttpGet]
         public IActionResult Get()
@@ -50,5 +21,17 @@ namespace MultiTenantAPI.Controllers
                 AllItems = HttpContext.Items.Keys
             });
         }
+
+
+        [HttpPost("test-plesk")]
+        public async Task<IActionResult> Test(
+        [FromServices] IPleskService plesk)
+        {
+            var result =
+            await plesk.CreateSubDomain("customer101");
+
+            return Ok(result);
+        }
+
     }
 }

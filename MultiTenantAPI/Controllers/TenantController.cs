@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using Microsoft.AspNetCore.Mvc;
+using MultiTenantAPI.Docker;
 using MultiTenantAPI.Models;
+using MultiTenantAPI.Repository;
 using MultiTenantAPI.Services;
 
 namespace MultiTenantAPI.Controllers
@@ -8,122 +11,122 @@ namespace MultiTenantAPI.Controllers
     [Route("api/[controller]")]
     public class TenantController : ControllerBase
     {
-
         private readonly ITenantService _tenantService;
+        private readonly FolderService _folderService;
 
-
-        public TenantController(
-            ITenantService tenantService)
+        public TenantController(ITenantService tenantService,
+            FolderService folderService)
         {
             _tenantService = tenantService;
         }
 
+        // Check Current Tenant
 
-
-        // Check Tenant Middleware
         [HttpGet]
         public IActionResult Get()
         {
             return Ok(new
             {
                 Host = HttpContext.Request.Host.Host,
-
-                Tenant =
-                HttpContext.Items["TenantId"]?.ToString()
+                Tenant = HttpContext.Items["TenantId"]?.ToString()
             });
         }
 
-
-
-
         // Get Tenant Configuration
         [HttpGet("get-config/{tenantId}")]
+
         public IActionResult GetConfig(string tenantId)
         {
             try
             {
-
-                // TenantService  config load 
-                var config =
-                    _tenantService.LoadConfig(tenantId);
-
-
+                var config = _tenantService.LoadConfig(tenantId);
                 return Ok(config);
-
             }
+
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
 
                 return StatusCode(500, new
                 {
-                    Message = "Error loading tenant config",
-
+                    Message = "Error loading tenant configuration.",
                     Error = ex.Message
                 });
-
             }
         }
 
 
 
 
+        // Create New Tenant
 
-        // Create Tenant Database
         [HttpPost("create")]
-        public async Task<IActionResult> CreateTenant(
-            [FromBody] TenantCreateRequest request)
+        public async Task<IActionResult> CreateTenant([FromBody] TenantCreateRequest request)
         {
-
-            if (request == null ||
-               string.IsNullOrWhiteSpace(request.DatabaseName))
+            if (request == null)
             {
                 return BadRequest(new
                 {
-                    Message = "Invalid request"
+                    Message = "Request cannot be null."
                 });
             }
 
 
+
+            if (string.IsNullOrWhiteSpace(request.CompanyName) ||
+                string.IsNullOrWhiteSpace(request.SubDomain) ||
+                string.IsNullOrWhiteSpace(request.DatabaseName) ||
+                string.IsNullOrWhiteSpace(request.AdminEmail))
+            {
+                return BadRequest(new
+                {
+                    Message = "All fields are required."
+                });
+            }
 
             try
             {
+                Console.WriteLine("========== CREATE TENANT ==========");
+                Console.WriteLine($"Company   : {request.CompanyName}");
+                Console.WriteLine($"SubDomain : {request.SubDomain}");
+                Console.WriteLine($"Database  : {request.DatabaseName}");
+                Console.WriteLine($"Email     : {request.AdminEmail}");
 
-                // Save Tenant details
-                await _tenantService.Create(request);
+                bool result = await _tenantService.CreateTenant(request);
 
+                if (!result)
+                {
+                    Console.WriteLine("Tenant creation failed.");
 
+                    return StatusCode(500, new
+                    {
+                        Message = "Tenant creation failed."
+                    });
+                }
 
-                // Create Tenant Database
-                await _tenantService.CreateDatabase(
-                    request.DatabaseName);
-
-
-
+                Console.WriteLine("Tenant created successfully.");
+                //await _folderService.CopyFolder("client1");
                 return Ok(new
                 {
-                    Message =
-                    "Tenant Database Created Successfully",
-
-                    Database =
-                    request.DatabaseName
+                    Message = "Tenant created successfully.",
+                    CompanyName = request.CompanyName,
+                    SubDomain = request.SubDomain,
+                    Database = request.DatabaseName,
+                    AdminEmail = request.AdminEmail
                 });
-
             }
             catch (Exception ex)
             {
+                Console.WriteLine("Exception:");
+                Console.WriteLine(ex.ToString());
 
                 return StatusCode(500, new
                 {
-                    Message =
-                    "Error creating tenant database",
-
-                    Error =
-                    ex.Message
+                    Message = "An error occurred while creating the tenant.",
+                    Error = ex.Message,
+                    StackTrace = ex.StackTrace // Debug only
                 });
-
             }
-
         }
-
     }
 }

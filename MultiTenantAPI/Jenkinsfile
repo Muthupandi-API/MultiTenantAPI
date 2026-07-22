@@ -4,13 +4,13 @@ pipeline {
 
     environment {
         IMAGE_NAME = "muthupandimathi/multitenantapi"
-        IMAGE_TAG  = "${BUILD_NUMBER}"
+        IMAGE_TAG = "${BUILD_NUMBER}"
         KUBECONFIG = "C:\\Users\\HP ZBOOK FURY\\.kube\\config"
     }
 
     stages {
 
-        stage('Build .NET') {
+        stage('Restore & Publish') {
             steps {
                 dir('MultiTenantAPI') {
                     bat 'dotnet restore'
@@ -36,7 +36,7 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
-                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                    bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
                 }
             }
         }
@@ -50,20 +50,30 @@ pipeline {
         stage('Deploy Kubernetes') {
             steps {
                 dir('MultiTenantAPI') {
+
                     bat 'kubectl apply -f kubernetes\\deployment.yaml'
+
+                    bat 'kubectl set image deployment/multitenantapi multitenantapi=%IMAGE_NAME%:%IMAGE_TAG%'
+
+                    bat 'kubectl rollout status deployment/multitenantapi'
                 }
             }
         }
+
     }
 
     post {
 
         success {
-            echo 'Build Successful'
+            echo "Build Successful"
         }
 
         failure {
-            echo 'Build Failed'
+            echo "Build Failed"
+        }
+
+        always {
+            bat 'docker image prune -f'
         }
     }
 }
