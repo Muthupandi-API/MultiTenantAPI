@@ -58,7 +58,22 @@ namespace MultiTenantAPI.Services
               
                 Console.WriteLine("STEP 2 : Copying Folder");
 
-                Console.WriteLine("SUCCESS : Folder Copied");
+                // Call FolderService to copy template folder for the tenant
+                try
+                {
+                    await _folderService.CopyFolder(request.SubDomain);
+                    Console.WriteLine("SUCCESS : Folder Copied");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("FAILED : Folder Copy");
+                    return new TenantCreationResult
+                    {
+                        Success = false,
+                        Message = "Folder creation failed",
+                        Details = ex.ToString()
+                    };
+                }
 
                 // STEP 2
 
@@ -102,8 +117,6 @@ namespace MultiTenantAPI.Services
 
                 Console.WriteLine("SUCCESS : Docker Created");
 
-
-                await _folderService.CopyFolder(request.SubDomain);
 
 
 

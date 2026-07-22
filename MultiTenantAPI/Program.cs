@@ -27,7 +27,14 @@ builder.Services.AddScoped<IDockerService, DockerService>();
 //  Plesk Service
 builder.Services.AddScoped<IPleskService, PleskService>();
 
-builder.Services.AddHttpClient<FolderService>();
+// HttpClient for FolderService: some servers / WAFs block requests without common headers
+// Add a User-Agent and Accept header to reduce chance of ModSecurity blocking the request.
+builder.Services.AddHttpClient<FolderService>(client =>
+{
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; MultiTenantAPI/1.0)");
+    client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 
 // CORS
