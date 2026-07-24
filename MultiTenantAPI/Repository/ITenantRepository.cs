@@ -13,5 +13,9 @@ namespace MultiTenantAPI.Repository
             int port);
 
         Task<int> GetNextPort();
+
+        Task<TenantInfo?> GetTenantBySubDomain(string subDomain);
+
+
     }
 }

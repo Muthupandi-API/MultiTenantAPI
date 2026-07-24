@@ -13,14 +13,19 @@ namespace MultiTenantAPI.Controllers
         {
             try
             {
-                
+
                 // Angular template folder
-                string source = @"C:\Inetpub\vhosts\demo1.jailscorp.com\site-template";
+                //  string source = @"C:\Inetpub\vhosts\demo1.jailscorp.com\site-template";
+
+                string source = @"D:\Source1";
 
                 // Tenant folder
                 //string destination = $@"C:\Inetpub\vhosts\demo1.jailscorp.com\{request.TenantName}";
-                string basePath = @"C:\Inetpub\vhosts\demo1.jailscorp.com";
 
+
+                //  string basePath = @"C:\Inetpub\vhosts\demo1.jailscorp.com";
+
+                string basePath = @"D:\Destination";
 
                 int siteNumber = 1;
 

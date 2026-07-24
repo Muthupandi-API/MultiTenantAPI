@@ -58,23 +58,8 @@ namespace MultiTenantAPI.Services
               
                 Console.WriteLine("STEP 2 : Copying Folder");
 
-                // Call FolderService to copy template folder for the tenant
-                try
-                {
-                    await _folderService.CopyFolder(request.SubDomain);
-                    Console.WriteLine("SUCCESS : Folder Copied");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("FAILED : Folder Copy");
-                    return new TenantCreationResult
-                    {
-                        Success = false,
-                        Message = "Folder creation failed",
-                        Details = ex.ToString()
-                    };
-                }
-
+                // Folder copy will be performed after tenant creation completes.
+                // Do not perform it here to avoid blocking early in the creation flow.
                 // STEP 2
 
 
@@ -143,6 +128,19 @@ namespace MultiTenantAPI.Services
 
                 Console.WriteLine("SUCCESS : Plesk Created");
                 Console.WriteLine("========== TENANT CREATED ==========");
+
+                // Wait 2 seconds, then perform the folder copy as a final post-creation step.
+                try
+                {
+                    await Task.Delay(2000);
+                    await _folderService.CopyFolder(request.SubDomain);
+                    Console.WriteLine("SUCCESS : Folder Copied (post-create)");
+                }
+                catch (Exception ex)
+                {
+                    // Log error but do not mark overall creation as failed since tenant is created.
+                    Console.WriteLine($"WARNING : Post-create folder copy failed: {ex}");
+                }
 
                 return new TenantCreationResult
                 {

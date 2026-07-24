@@ -1,6 +1,5 @@
-﻿
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using MultiTenantAPI.Data;
 using MultiTenantAPI.Services;
 
 namespace MultiTenantAPI.Controllers
@@ -9,7 +8,17 @@ namespace MultiTenantAPI.Controllers
     [Route("api/[controller]")]
     public class TestController : ControllerBase
     {
-        
+
+        private readonly ApplicationDbContext _context;
+
+
+        public TestController(
+            ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+
 
         [HttpGet]
         public IActionResult Get()
@@ -18,7 +27,29 @@ namespace MultiTenantAPI.Controllers
             {
                 Host = HttpContext.Request.Host.Host,
                 TenantId = HttpContext.Items["TenantId"],
-                AllItems = HttpContext.Items.Keys
+                Connection = HttpContext.Items["ConnectionString"]
+            });
+        }
+
+
+
+        [HttpGet("users")]
+        public IActionResult GetUsers()
+        {
+            var users = _context.Users.ToList();
+
+            return Ok(users);
+        }
+
+        [HttpGet("header")]
+        public IActionResult Header(
+            [FromHeader(Name = "X-Tenant")] string tenant)
+        {
+            return Ok(new
+            {
+                Header = tenant,
+                Host = HttpContext.Request.Host.Host,
+                TenantId = HttpContext.Items["TenantId"]
             });
         }
 
